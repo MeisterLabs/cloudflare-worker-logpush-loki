@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: logpush-proxy
+  name: logpush-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logpush-proxy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: logpush-proxy
+    spec:
+      containers:
+      - image: europe-west1-docker.pkg.dev/meisterlabs-staging/logpush-proxy/meisterfork:8b5d199
+        name: logpush-proxy
+        command:
+        - /bin/sh
+        - -c
+        - npm start
+        volumeMounts:
+        - name: config
+          mountPath: "/app/wrangler.toml"
+          subPath: wrangler.toml
+      volumes:
+      - name: config
+        secret:
+          secretName: config
+
