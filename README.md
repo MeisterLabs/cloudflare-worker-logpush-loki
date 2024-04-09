@@ -10,11 +10,17 @@
 
 You can configure Cloudflare Logpush to send Logs to any [HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/), so let's send some logs to [Grafana Loki](https://grafana.com/oss/loki/).
 
+NOTE: The auth is passed through to Loki based on a header in the Job definition in CloudFlare.
+
 This Worker takes the incoming Logpush JSON Format and transforms it into something Loki understands:
 
 - take incoming gzipped Logpush data, unpack it
 - merge all fields into the Loki API format and send it off to the destination
 - profit
+
+## Deploy in k8s
+
+This fork is designed for running in k8s.  `deploy/` contains the yaml you'll need.  Perhaps a helm chart will come later.  Perhaps even a public docker image, for now you'll need to build it from the Dockerfile.
 
 ## Create the Worker
 
@@ -35,6 +41,8 @@ Note down the returned URL to create the actual logpush job.
 
 First, get all the available log fields for your zone. To do this, get your Zone ID from the Cloudflare Dashboard and generate an API Key. Replace `<ZONE_ID>` and `your-token-here` in the following command:
 
+Note: your Zone ID is not the hash in the url of cloudflare any more, it's in the overview page.
+
 ```shell
 curl -s "https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/logpush/datasets/http_requests/fields" -H "Authorization: Bearer your-token-here" -H 'Content-Type: application/json' | jq -r '.result|keys[]'|tr '\n' ',' | sed 's/,$/\n/'
 ```
@@ -48,6 +56,8 @@ BotScore,BotScoreSrc,BotTags,CacheCacheStatus,CacheReserveUsed,CacheResponseByte
 ### Create Logpush Job
 
 Here's a curl request to create a Logpush Job with a lot of included fields already. You might want to update the `fields=` field below with the output from above. Please keep the `&timestamps=unixnano`:
+
+The `header_Authorization` param should contain your username and password **for Loki**.  You can generate this with https://www.debugbear.com/basic-auth-header-generator (I checked, it uses client-side JS and doesn't submit anywhere) if you don't have another choice.
 
 ```
 curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<zone id>/logpush/jobs' \
