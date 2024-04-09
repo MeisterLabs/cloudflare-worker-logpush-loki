@@ -7,4 +7,4 @@ compatibility_date = "2022-08-01"
 send_metrics = false
 
 [vars]
-lokiHost = "https://logs-prod-us-central1.grafana.net/loki/api/v1/push"
+lokiHost = "https://logs-prod-012.grafana.net/loki/api/v1/push"
